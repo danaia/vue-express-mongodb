@@ -1,0 +1,36 @@
+# Refs:
+# https://codewithhugo.com/setting-up-express-and-redis-with-docker-compose/
+# https://github.com/HugoDF/express-redis-docker/blob/master/server.js
+
+mongodb:
+  image: mongo:4.2
+  container_name: 'mongodb'
+  environment:
+    - MONGO_DATA_DIR=/data/db
+    - MONGO_LOG_DIR=/dev/null
+    - MONGO_INITDB_ROOT_USERNAME=
+    - MONGO_INITDB_ROOT_PASSWORD=
+    - MONGO_INITDB_DATABASE=vue-express-docker
+  volumes:
+    - ./data/db:/data/db
+  ports:
+    - 27017:27017
+  expose:
+    - 27017
+  command: mongod --dbpath=./data/db #--smallfiles --logpath=/dev/null # --quiet
+app:
+  build: ./
+  volumes:
+    - ./:/var/www/app
+  links:
+    - mongodb
+  ports:
+    - 8080:8080
+    - 8888:8888
+  environment:
+    - REDIS_URL=redis://cache
+    - NODE_ENV=development
+    - PORT=8080
+    - DB_NAME=vue-express-docker
+    - DB_HOST=mongodb
+  command: sh -c 'npm i && node start.js'
